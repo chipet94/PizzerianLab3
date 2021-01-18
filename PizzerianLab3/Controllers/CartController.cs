@@ -91,7 +91,7 @@ namespace PizzerianLab3.Controllers
 
             if (request.ExtraIngredients.Any())
             {
-                if (request.ExtraIngredients.Any(x => x.MenuNumber < 1 && x.MenuNumber > 11))
+                if (request.ExtraIngredients.Any(x => x.MenuNumber < 1 || x.MenuNumber > 11))
                     return BadRequest("Request contains tainded ingredient id, please re-check your order.");
 
                 var menu = await _context.Menus.FirstOrDefaultAsync();
