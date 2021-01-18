@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PizzerianLab3;
 using PizzerianLab3.Data.Entities;
 
 namespace PizzerianLab3Test

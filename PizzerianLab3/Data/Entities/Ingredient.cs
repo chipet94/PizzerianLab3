@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace PizzerianLab3.Data.Entities
 {
@@ -7,15 +6,11 @@ namespace PizzerianLab3.Data.Entities
     {
         public Guid Id { get; set; }
         public int MenuNumber { get; set; }
-        private string IngredientName;
-        public string Name
-        {
-            get { return IngredientOption.ToString(); }
-            set { IngredientName = value; }
-        }
+        public string Name => IngredientOption.ToString();
         public IngredientEnum IngredientOption { get; set; }
         public double Price { get; set; }
     }
+
     public enum IngredientEnum
     {
         Ham = 1,

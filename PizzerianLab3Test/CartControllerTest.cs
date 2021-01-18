@@ -1,9 +1,7 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PizzerianLab3;
-using PizzerianLab3.Controllers;
-using PizzerianLab3.Data;
-using PizzerianLab3.Data.Entities;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PizzerianLab3.Data.Entities;
+using PizzerianLab3.Singletons;
 
 namespace PizzerianLab3Test
 {

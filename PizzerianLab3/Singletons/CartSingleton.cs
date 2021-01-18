@@ -1,6 +1,6 @@
 ﻿using PizzerianLab3.Data.Entities;
 
-namespace PizzerianLab3
+namespace PizzerianLab3.Singletons
 {
     public class CartSingleton
     {
@@ -10,6 +10,5 @@ namespace PizzerianLab3
         {
             Order = new Order();
         }
-
     }
 }

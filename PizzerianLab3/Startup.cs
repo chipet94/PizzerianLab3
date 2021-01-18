@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PizzerianLab3.Data;
 using PizzerianLab3.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using PizzerianLab3.Singletons;
 
 namespace PizzerianLab3
 {
@@ -29,14 +24,14 @@ namespace PizzerianLab3
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options => options
-            .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
-            .UseLazyLoadingProxies());
+                .UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
+                .UseLazyLoadingProxies());
 
             services.AddSingleton<CartSingleton>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PizzerianLab3", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "PizzerianLab3", Version = "v1"});
                 c.EnableAnnotations();
             });
         }
@@ -57,10 +52,7 @@ namespace PizzerianLab3
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

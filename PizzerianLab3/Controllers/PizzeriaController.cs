@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PizzerianLab3.Data;
-using PizzerianLab3.Data.Entities;
-using PizzerianLab3.Models;
+using PizzerianLab3.Extensions.Models;
+using PizzerianLab3.Models.Display;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -23,6 +21,7 @@ namespace PizzerianLab3.Controllers
         {
             _context = context;
         }
+
         // GET: api/<OrderController>
         [HttpGet]
         [SwaggerOperation(Summary = "Get menu")]
@@ -37,43 +36,13 @@ namespace PizzerianLab3.Controllers
                 })
                 .FirstOrDefaultAsync();
 
-            var menuDisplayModel = new MenuViewModel();
+            var menuDisplayModel = new MenuViewModel()
+            {   
+                Pizzas = menu.PizzaMenu.ToMenuViewModels(),
+                Sodas = menu.SodaMenu.ToViewModels(),
+                ExtraIngredients = menu.IngredientMenu.ToExtrasViewModels()
 
-            foreach (var pizza in menu.PizzaMenu)
-            {
-                var pizzaDisplayModel = new PizzaMenuViewModel();
-
-                pizzaDisplayModel.MenuNumber = pizza.MenuNumber;
-                pizzaDisplayModel.Name = pizza.Name;
-                pizzaDisplayModel.Price = pizza.Price;
-
-                foreach (var ingredient in pizza.PizzaIngredients)
-                {
-                    var ingredientDisplayModel = new IngredientViewModel();
-                    ingredientDisplayModel.Name = ingredient.Name;
-                    pizzaDisplayModel.PizzaIngredients.Add(ingredientDisplayModel);
-                }
-                menuDisplayModel.Pizzas.Add(pizzaDisplayModel);
-            }
-
-            foreach (var soda in menu.SodaMenu)
-            {
-                var sodaDisplayModel = new SodaViewModel();
-                sodaDisplayModel.MenuNumber = soda.MenuNumber;
-                sodaDisplayModel.Name = soda.Name;
-                sodaDisplayModel.Price = soda.Price;
-                menuDisplayModel.Sodas.Add(sodaDisplayModel);
-            }
-
-            foreach (var extraIngredient in menu.IngredientMenu)
-            {
-                var extraIngredientDisplayModel = new ExtraIngredientViewModel();
-                extraIngredientDisplayModel.MenuNumber = extraIngredient.MenuNumber;
-                extraIngredientDisplayModel.Name = extraIngredient.Name;
-                extraIngredientDisplayModel.Price = extraIngredient.Price;
-                menuDisplayModel.ExtraIngredients.Add(extraIngredientDisplayModel);
-            }
-            
+            };
             return Ok(menuDisplayModel);
         }
     }

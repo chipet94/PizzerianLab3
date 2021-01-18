@@ -1,9 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PizzerianLab3.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PizzerianLab3.Data
 {
@@ -11,7 +7,6 @@ namespace PizzerianLab3.Data
     {
         public AppDbContext()
         {
-
         }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -21,6 +16,7 @@ namespace PizzerianLab3.Data
 
         public DbSet<Menu> Menus { get; set; }
         public DbSet<Order> Orders { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

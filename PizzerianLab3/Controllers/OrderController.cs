@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PizzerianLab3.Data;
-using PizzerianLab3.Data.Entities;
-using PizzerianLab3.DTOs;
-using PizzerianLab3.Models;
-using Swashbuckle.AspNetCore.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PizzerianLab3.Data;
+using PizzerianLab3.Data.Entities;
+using PizzerianLab3.DTOs.Order;
+using PizzerianLab3.Extensions.Models;
+using PizzerianLab3.Models.Display;
+using PizzerianLab3.Singletons;
+using Swashbuckle.AspNetCore.Annotations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,8 +20,8 @@ namespace PizzerianLab3.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly AppDbContext _context;
         private readonly CartSingleton _cart;
+        private readonly AppDbContext _context;
 
         public OrderController(AppDbContext context, CartSingleton cart)
         {
@@ -35,8 +37,8 @@ namespace PizzerianLab3.Controllers
             // All non-completed orders
             var orders = await _context.Orders
                 .Where(x => x.IsActive)
-                .Select(x => new 
-                { 
+                .Select(x => new
+                {
                     x.Id,
                     x.Pizzas,
                     x.Sodas,
@@ -44,51 +46,16 @@ namespace PizzerianLab3.Controllers
                 }).ToListAsync();
 
             var viewActiveOrders = new List<ResponseViewModel>();
-
-            double totalPrice = 0;
             foreach (var order in orders)
             {
-                var viewActiveOrderModel = new ResponseViewModel();
-                foreach (var pizza in order.Pizzas)
+                var viewActiveOrderModel = new ResponseViewModel
                 {
-                    var viewPizza = new PizzaViewModel();
-
-                    foreach (var ingredient in pizza.PizzaIngredients)
-                    {
-                        var viewIngredient = new IngredientViewModel();
-                        viewIngredient.Name = ingredient.Name;
-                        viewPizza.PizzaIngredients.Add(viewIngredient);
-                    }
-
-                    foreach (var extraIngredient in pizza.ExtraIngredients)
-                    {
-                        var viewExtraIngredient = new ExtraIngredientViewModel();
-                        viewExtraIngredient.MenuNumber = extraIngredient.MenuNumber;
-                        viewExtraIngredient.Name = extraIngredient.Name;
-                        viewExtraIngredient.Price = extraIngredient.Price;
-                        viewPizza.ExtraIngredients.Add(viewExtraIngredient);
-                    }
-
-                    viewPizza.PizzaId = pizza.Id;
-                    viewPizza.MenuNumber = pizza.MenuNumber;
-                    viewPizza.Name = pizza.Name;
-                    viewPizza.Price = pizza.Price;
-                    totalPrice += pizza.Price;
-                    viewActiveOrderModel.Pizzas.Add(viewPizza);
-                }
-                foreach (var soda in order.Sodas)
-                {
-                    var viewSoda = new SodaViewModel();
-                    viewSoda.MenuNumber = soda.MenuNumber;
-                    viewSoda.Name = soda.Name;
-                    viewSoda.Price = soda.Price;
-                    totalPrice += soda.Price;
-                    viewActiveOrderModel.Sodas.Add(viewSoda);
-                }
-                viewActiveOrderModel.OrderId = order.Id;
-                viewActiveOrderModel.TotalPrice = totalPrice;
+                    OrderId = order.Id,
+                    Pizzas = order.Pizzas.ToViewModels(),
+                    Sodas = order.Sodas.ToViewModels(),
+                    TotalPrice = order.TotalPrice
+                };
                 viewActiveOrders.Add(viewActiveOrderModel);
-                totalPrice = 0;
             }
 
             return Ok(viewActiveOrders);
@@ -103,62 +70,12 @@ namespace PizzerianLab3.Controllers
                 BadRequest("Bad request");
 
             var itemsInCart = _cart.Order;
-            var order = new Order()
+            var order = new Order
             {
                 Id = Guid.NewGuid(),
-                TotalPrice = itemsInCart.TotalPrice
+                Pizzas = itemsInCart.Pizzas,
+                Sodas = itemsInCart.Sodas
             };
-
-            foreach (var pizza in itemsInCart.Pizzas)
-            {
-                var bakingPizza = new Pizza()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = pizza.Name,
-                    MenuNumber = pizza.MenuNumber,
-                    Price = pizza.Price
-                };
-
-                foreach (var ingredient in pizza.PizzaIngredients)
-                {
-                    var freshIngredient = new Ingredient()
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = ingredient.Name,
-                        MenuNumber = ingredient.MenuNumber,
-                        IngredientOption = ingredient.IngredientOption,
-                        Price = ingredient.Price
-                    };
-                    bakingPizza.PizzaIngredients.Add(freshIngredient);
-                }
-
-                foreach (var extraIngredient in pizza.ExtraIngredients)
-                {
-                    var freshExtraIngredients = new Ingredient()
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = extraIngredient.Name,
-                        MenuNumber = extraIngredient.MenuNumber,
-                        IngredientOption = extraIngredient.IngredientOption,
-                        Price = extraIngredient.Price
-                    };
-                    bakingPizza.ExtraIngredients.Add(freshExtraIngredients);
-                }
-
-                order.Pizzas.Add(bakingPizza);
-            }
-
-            foreach (var soda in itemsInCart.Sodas)
-            {
-                var servingSoda = new Soda()
-                {
-                    Id = Guid.NewGuid(),
-                    MenuNumber = soda.MenuNumber,
-                    Name = soda.Name,
-                    Price = soda.Price
-                };
-                order.Sodas.Add(servingSoda);
-            }
 
             _context.Add(order);
             await _context.SaveChangesAsync();
@@ -198,10 +115,10 @@ namespace PizzerianLab3.Controllers
                 BadRequest("Bad request");
 
             if (!string.IsNullOrWhiteSpace(request.OrderIds.FirstOrDefault()))
-            {
                 foreach (var orderId in request.OrderIds)
                 {
-                    var order = await _context.Orders.Where(x => x.IsActive && x.Id.ToString() == orderId).FirstOrDefaultAsync();
+                    var order = await _context.Orders.Where(x => x.IsActive && x.Id.ToString() == orderId)
+                        .FirstOrDefaultAsync();
 
                     if (order != null)
                     {
@@ -210,11 +127,12 @@ namespace PizzerianLab3.Controllers
                         await _context.SaveChangesAsync();
                     }
                     else
+                    {
                         return BadRequest("There's no active order with that Id.");
+                    }
                 }
-            }
 
-            return Ok(new { canceledOrders = request.OrderIds });
+            return Ok(new {canceledOrders = request.OrderIds});
         }
     }
 }

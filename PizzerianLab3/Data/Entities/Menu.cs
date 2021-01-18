@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PizzerianLab3.Data.Entities
 {
@@ -14,6 +10,7 @@ namespace PizzerianLab3.Data.Entities
             SodaMenu = new List<Soda>();
             IngredientMenu = new List<Ingredient>();
         }
+
         public virtual ICollection<Pizza> PizzaMenu { get; set; }
         public virtual ICollection<Soda> SodaMenu { get; set; }
         public virtual ICollection<Ingredient> IngredientMenu { get; set; }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using PizzerianLab3.DTOs.ModelDTO;
 
-namespace PizzerianLab3.DTOs
+namespace PizzerianLab3.DTOs.Cart
 {
     public class UpdateCartDTO
     {
